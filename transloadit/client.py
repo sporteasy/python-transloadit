@@ -1,12 +1,13 @@
+import re
 import hashlib
 import hmac
 import urlparse
+import urllib2
 import httplib
 import mimetypes
 from datetime import datetime, timedelta
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
-import urllib2
 
 
 register_openers()
@@ -60,14 +61,40 @@ class Client(object):
             for index, file_ in enumerate(files):
                 fields['file{}'.format(index+1)] = open(file_, mode='rb')
         datagen, headers = multipart_encode(fields)
+        print self.api
         request = urllib2.Request(self.api, datagen, headers)
         response = urllib2.urlopen(request)
         return json.loads(response.read())
 
-    def request(self, files=None, fields=None, **params):
+    def create_assembly(self, files=None, fields=None, **params):
         if fields is None:
             fields = {}
-
         fields.update(get_fields(self.key, self.secret, params))
-
         return self._send_request(files, **fields)
+
+    def get_assembly_result(self, assembly_id):
+        assembly_url = '{}/{}'.format(self.api, assembly_id)
+        return json.loads(urllib2.urlopen(assembly_url).read())
+
+
+class TestClient(object):
+    """
+    Fake client for unit/functional tests. Reads directly responses from fixtures files.
+    """
+    def __init__(self, key, secret, api=None, media_root=None):
+        self.api = api
+        self.media_root = media_root
+
+    def _get_response(self, url):
+        response_content = urllib2.urlopen(url).read()
+        response_content = re.sub('\{\{ TRANSLOADIT_API \}\}', self.api, response_content)
+        response_content = re.sub('\{\{ MEDIA_ROOT \}\}', self.media_root, response_content)
+        return json.loads(response_content)
+
+    def create_assembly(self, files=None, fields=None, **params):
+        url = u'{}/{}.json'.format(self.api, fields['type'])
+        return self._get_response(url)
+
+    def get_assembly_result(self, assembly_id):
+        url = '{}/{}.json'.format(self.api, assembly_id)
+        return self._get_response(url)
