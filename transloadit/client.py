@@ -62,7 +62,6 @@ class Client(object):
             for index, file_ in enumerate(files):
                 fields['file{}'.format(index+1)] = open(file_, mode='rb')
         datagen, headers = multipart_encode(fields)
-        print self.api
         request = urllib2.Request(self.api, datagen, headers)
         response = urllib2.urlopen(request, timeout=self.timeout)
         return json.loads(response.read())
