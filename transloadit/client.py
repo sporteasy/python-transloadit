@@ -11,7 +11,7 @@ ASSEMBLY_API_URL = 'http://api2.transloadit.com/assemblies'
 
 
 def sign_request(secret, params):
-    return hmac.new(secret, json.dumps(params), hashlib.sha1).hexdigest()
+    return hmac.new(secret.encode(), json.dumps(params).encode(), hashlib.sha1).hexdigest()
 
 
 def get_fields(key, secret, params):
