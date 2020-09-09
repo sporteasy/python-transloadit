@@ -69,8 +69,8 @@ class TestClient(object):
         file_path = url.replace("file://", "")
         with open(file_path) as json_file:
             content = json_file.read()
-            content = re.sub('\{\{ TRANSLOADIT_API \}\}', self.api, content)
-            content = re.sub('\{\{ MEDIA_ROOT \}\}', self.media_root, content)
+            content = re.sub(r'{{ TRANSLOADIT_API }}', self.api, content)
+            content = re.sub(r'{{ MEDIA_ROOT }}', self.media_root, content)
             return json.loads(content)
 
     def create_assembly(self, files=None, fields=None, **params):
